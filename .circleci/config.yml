@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: node:latest
     working_directory: ~/cli
-    steps:
+    steps: &steps
       - checkout
       - restore_cache: &restore_cache
           keys:
@@ -27,6 +27,12 @@ jobs:
     <<: *test
     docker:
       - image: node:10
+  pack:
+    <<: *test
+    steps:
+      - *steps
+      - run: npm run prepack
+      - run: npx @oclif/dev-cli pack:deb
   cache:
     <<: *test
     steps:
@@ -41,6 +47,18 @@ jobs:
             - ~/.npm
             - /usr/local/lib/node_modules
 
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./dist
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(./bin/run --version)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist/
+
 workflows:
   version: 2
   "sf-puppet-metadata":
@@ -49,6 +67,20 @@ workflows:
       - node-8
       - node-10
       - cache:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - pack:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - publish-github-release:
+          requires:
+            - pack
           filters:
             tags:
               only: /^v.*/
