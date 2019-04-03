@@ -1,0 +1,46 @@
+{
+  "name": "sf-puppet-metadata",
+  "description": "Generates metadata.json for a puppet module",
+  "version": "0.0.0",
+  "author": "Steve Porter @StevePorter92",
+  "bin": {
+    "sf-puppet-metadata": "./bin/run"
+  },
+  "bugs": "https://github.com/StevePorter92/sf-puppet-metadata/issues",
+  "dependencies": {
+    "@oclif/command": "^1.5.12",
+    "@oclif/config": "^1.12.12",
+    "@oclif/plugin-help": "^2.1.6",
+    "tslib": "^1.9.3"
+  },
+  "devDependencies": {
+    "@oclif/tslint": "^3.1.1",
+    "@types/node": "^10.14.4",
+    "ts-node": "^8.0.2",
+    "tslint": "^5.15.0",
+    "typescript": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib"
+  ],
+  "homepage": "https://github.com/StevePorter92/sf-puppet-metadata",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "oclif": {
+    "bin": "sf-puppet-metadata"
+  },
+  "repository": "StevePorter92/sf-puppet-metadata",
+  "scripts": {
+    "posttest": "tslint -p . -t stylish",
+    "prepack": "rm -rf lib && tsc -b",
+    "test": "echo NO TESTS"
+  },
+  "types": "lib/index.d.ts"
+}
