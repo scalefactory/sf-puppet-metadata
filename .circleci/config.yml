@@ -63,6 +63,7 @@ jobs:
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
+    working_directory: ~/cli
     steps:
       - attach_workspace:
           at: ~/cli
