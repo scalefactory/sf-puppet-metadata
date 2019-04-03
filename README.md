@@ -10,7 +10,19 @@ Generates metadata.json for a puppet module
 [![License](https://img.shields.io/npm/l/sf-puppet-metadata.svg)](https://github.com/StevePorter92/sf-puppet-metadata/blob/master/package.json)
 
 <!-- toc -->
+* [Usage](#usage)
+<!-- tocstop -->
 # Usage
 <!-- usage -->
-# Commands
-<!-- commands -->
+```sh-session
+$ npm install -g sf-puppet-metadata
+$ sf-puppet-metadata COMMAND
+running command...
+$ sf-puppet-metadata (-v|--version|version)
+sf-puppet-metadata/0.0.0 linux-x64 node-v10.15.3
+$ sf-puppet-metadata --help [COMMAND]
+USAGE
+  $ sf-puppet-metadata COMMAND
+...
+```
+<!-- usagestop -->
