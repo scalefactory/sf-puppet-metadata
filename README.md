@@ -19,7 +19,7 @@ $ npm install -g sf-puppet-metadata
 $ sf-puppet-metadata COMMAND
 running command...
 $ sf-puppet-metadata (-v|--version|version)
-sf-puppet-metadata/0.0.0 linux-x64 node-v10.15.3
+sf-puppet-metadata/1.0.0 linux-x64 node-v10.15.3
 $ sf-puppet-metadata --help [COMMAND]
 USAGE
   $ sf-puppet-metadata COMMAND
