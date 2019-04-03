@@ -10,7 +10,14 @@ import {ModuleObject} from './interfaces/module-object'
 import {sfTemplate} from './templates/sfModule.template'
 
 class SfPuppetMetadata extends Command {
-  static description = 'describe the command here'
+  static description = 'Generates metadata.json for a given Puppet module'
+
+  static usage = 'sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module'
+
+  static examples = [
+    '$ sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module -o',
+    '$ sf-puppet-metadata --help',
+  ]
 
   static flags = {
     // add --version flag to show CLI version
