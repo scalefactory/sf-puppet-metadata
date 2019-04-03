@@ -31,6 +31,7 @@ jobs:
     <<: *test
     steps:
       - checkout
+      - run: apt update && apt install dpkg-dev apt-utils -y
       - restore_cache: &restore_cache
           keys:
             - v1-npm-{{checksum ".circleci/config.yml"}}-{{checksum "package-lock.json"}}
