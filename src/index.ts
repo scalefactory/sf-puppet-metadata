@@ -43,7 +43,7 @@ class SfPuppetMetadata extends Command {
     }),
   }
 
-  static args = [{name: 'modulepath'}]
+  static args = [{name: 'modulepath', required: true}]
 
   dependencies: Array<ModuleObject> | undefined
   writeLocation!: string
