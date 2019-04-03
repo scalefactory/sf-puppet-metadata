@@ -45,8 +45,6 @@ jobs:
           root: ~/cli
           paths:
             - dist
-            - lib
-            - bin
   cache:
     <<: *test
     steps:
@@ -70,9 +68,7 @@ jobs:
           at: ~/cli
       - run:
           name: "Publish Release on GitHub"
-          command: |
-            VERSION=$(./bin/run --version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./dist/
+          command: ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./dist/
 
 workflows:
   version: 2
