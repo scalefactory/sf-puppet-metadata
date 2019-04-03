@@ -30,8 +30,21 @@ jobs:
   pack:
     <<: *test
     steps:
+      - checkout
+      - restore_cache: &restore_cache
+          keys:
+            - v1-npm-{{checksum ".circleci/config.yml"}}-{{checksum "package-lock.json"}}
+            - v1-npm-{{checksum ".circleci/config.yml"}}
+      - run:
+          name: Install dependencies
+          command: npm install
       - run: npm run prepack
       - run: npx @oclif/dev-cli pack:deb
+      - persist_to_workspace:
+          root: ~/cli
+          paths:
+            - dist
+            - lib
   cache:
     <<: *test
     steps:
@@ -51,7 +64,7 @@ jobs:
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: ./dist
+          at: ~/cli
       - run:
           name: "Publish Release on GitHub"
           command: |
