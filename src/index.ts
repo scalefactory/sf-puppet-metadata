@@ -62,7 +62,7 @@ class SfPuppetMetadata extends Command {
     } else {
       this.writeLocation = this.metaDataFileLocation()
 
-      if (this.shouldPromptToWrite()){
+      if (this.shouldPromptToWrite()) {
         this.writeLocation = await this.promptWriteLocation()
       }
 
@@ -78,9 +78,9 @@ class SfPuppetMetadata extends Command {
 
   writeTemplate(): void {
     fs.writeFile(this.writeLocation, this.generateOutput(), (err: any) => {
-      if (err) this.error(err);
-      this.log(`Successfully Written to ${this.writeLocation}.`);
-    });
+      if (err) this.error(err)
+      this.log(`Successfully Written to ${this.writeLocation}.`)
+    })
   }
 
   shouldPromptToWrite(): boolean {
@@ -135,7 +135,7 @@ class SfPuppetMetadata extends Command {
   }
 
   loadTemplate() {
-    return sfTemplate;
+    return sfTemplate
   }
 
   shouldOutput(): boolean {
@@ -175,7 +175,7 @@ class SfPuppetMetadata extends Command {
   }
 
   metaDataFileLocation(): string {
-    return path.join(this.modulePath(), 'metadata.json');
+    return path.join(this.modulePath(), 'metadata.json')
   }
 
   pluckFoundDependencies(matches: object): string[] {
