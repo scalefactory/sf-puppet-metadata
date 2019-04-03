@@ -1,13 +1,17 @@
 /* tslint:disable */
 
-export let sfTemplate: any = {
+export let sfTemplate: any = `{
     "name": "scalefactory-<%= MODULE_NAME; %>",
     "description": "sf-readyscale module",
     "version": "1.0.0",
     "author": "The Scale Factory Limited",
-    "summary": "Installs, and configures BLAH",
+    "summary": "Installs, and configures <%= MODULE_NAME; %>",
     "license": "All rights reserved",
     "source": "https://github.com/scalefactory/readyscale",
+    <% if (HAS_DATA_DIRECTORY) { %>
+        "data_provider": "hiera",
+    <% } %>
+    "dependencies": <%- JSON.stringify(DEPENDENCIES) %>,
     "operatingsystem_support": [
         {
             "operatingsystem": "CentOS",
@@ -23,4 +27,4 @@ export let sfTemplate: any = {
             "version_requirement": ">=3.8"
         }
     ]
-}
+}`

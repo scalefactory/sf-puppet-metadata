@@ -12,8 +12,12 @@
     "@oclif/config": "^1.12.12",
     "@oclif/plugin-help": "^2.1.6",
     "@types/ejs": "^2.6.3",
+    "@types/underscore": "^1.8.14",
+    "cli-ux": "^5.2.1",
     "ejs": "^2.6.1",
-    "tslib": "^1.9.3"
+    "find-in-files": "^0.5.0",
+    "tslib": "^1.9.3",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "@oclif/tslint": "^3.1.1",
