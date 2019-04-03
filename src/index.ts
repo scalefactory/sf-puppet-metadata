@@ -162,7 +162,7 @@ class SfPuppetMetadata extends Command {
   modulePath(): string {
     const {args} = this.parse(SfPuppetMetadata)
 
-    return args.modulepath
+    return path.resolve(args.modulepath)
   }
 
   isValidModule(): boolean {
