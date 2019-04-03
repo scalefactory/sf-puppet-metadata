@@ -40,6 +40,7 @@ jobs:
           name: Install dependencies
           command: npm install
       - run: npm run prepack
+      - run: npx @oclif/dev-cli pack -t linux-x64
       - run: npx @oclif/dev-cli pack:deb
       - persist_to_workspace:
           root: ~/cli
