@@ -14,6 +14,8 @@ Generates metadata.json for a puppet module
 <!-- tocstop -->
 # Usage
 <!-- usage -->
+
+### Node
 ```sh-session
 $ sf-puppet-metadata sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module
 Generating metadata.json for /path/to/puppet/module
@@ -37,6 +39,14 @@ OPTIONS
 EXAMPLES
   $ sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module -o
   $ sf-puppet-metadata --help
+...
+```
+
+### Docker
+
+Mount your puppetry to a folder called `/puppet` and use relative paths inside as parameters.
+```sh-session
+$ docker-run -it -v /path/to/puppet/code:/puppet --moduledata /puppet/modules /puppet/modules/module
 ...
 ```
 <!-- usagestop -->
