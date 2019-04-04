@@ -15,14 +15,28 @@ Generates metadata.json for a puppet module
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g sf-puppet-metadata
-$ sf-puppet-metadata COMMAND
-running command...
+$ sf-puppet-metadata sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module
+Generating metadata.json for /path/to/puppet/module
+Where to write metadata.json? [/path/to/puppet/module/metadata.json]: y
+Successfully Written to /path/to/puppet/module/metadata.jsonn.
+
 $ sf-puppet-metadata (-v|--version|version)
 sf-puppet-metadata/1.0.0 linux-x64 node-v10.15.3
+
 $ sf-puppet-metadata --help [COMMAND]
 USAGE
-  $ sf-puppet-metadata COMMAND
+  $ sf-puppet-metadata sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module
+
+OPTIONS
+  -f, --force              Force writing without prompt
+  -h, --help               show CLI help
+  -o, --output             Should output to console
+  -v, --version            show CLI version
+  --modulepath=modulepath  (required) [default: /puppet/code/environments/production/modules:/puppet/code/modules] The path to puppet modules
+
+EXAMPLES
+  $ sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module -o
+  $ sf-puppet-metadata --help
 ...
 ```
 <!-- usagestop -->

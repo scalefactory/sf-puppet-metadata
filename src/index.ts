@@ -29,8 +29,8 @@ class SfPuppetMetadata extends Command {
 
     modulepath: flags.string({
       required: true,
-      description: 'The path to puppet modules',
-      default: '/home/steve/tsf/readyscale/puppet/scalefactory.com/modules'
+      description: 'The path to puppet modules. Seperate multiple directories with a colon',
+      default: '/puppet/code/environments/production/modules:/puppet/code/modules'
     }),
 
     output: flags.boolean({
