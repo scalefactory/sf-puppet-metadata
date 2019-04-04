@@ -18,8 +18,16 @@ namespace ModuleHelper {
     return fs.existsSync(ModuleHelper.metaDataFilePath(modulePath))
   }
 
+  export function containsReadme(modulePath: string): boolean {
+    return fs.existsSync(ModuleHelper.readmeFilePath(modulePath))
+  }
+
   export function metaDataFilePath(modulePath: string): string {
     return path.join(modulePath, 'metadata.json')
+  }
+
+  export function readmeFilePath(modulePath: string): string {
+    return path.join(modulePath, 'README.md')
   }
 
   export function dataDirFilePath(modulePath: string): string {

@@ -3,6 +3,7 @@ import cli from 'cli-ux'
 import * as ejs from 'ejs'
 import {findSync} from 'find-in-files'
 import * as fs from 'fs'
+import * as nthline from 'nthline'
 import * as path from 'path'
 import * as _ from 'underscore'
 
@@ -23,7 +24,6 @@ class SfPuppetMetadata extends Command {
   ]
 
   static flags = {
-    // add --version flag to show CLI version
     version: flags.version({char: 'v'}),
     help: flags.help({char: 'h'}),
 
@@ -98,14 +98,14 @@ class SfPuppetMetadata extends Command {
     return this.flags.force === false
   }
 
-  printTemplate(): void {
-    this.log(this.generateOutput())
+  async printTemplate(): Promise<void> {
+    this.log(await this.generateOutput())
   }
 
-  generateOutput(): string {
+  async generateOutput(): Promise<string> {
     const output = ejs.render(
       this.loadTemplate(),
-      this.generateData()
+      await this.generateData()
     )
 
     return JSON.stringify(JSON.parse(output), null, 4)
@@ -130,12 +130,29 @@ class SfPuppetMetadata extends Command {
     return formatted
   }
 
-  generateData(): object {
+  async generateData(): Promise<object> {
     return {
+      SUMMARY: await this.getModuleSummary(),
       MODULE_NAME: ModuleHelper.moduleBaseName(this.modulePath()),
       DEPENDENCIES: this.hasDependencies() ? this.formatDependencies() : [],
       HAS_DATA_DIRECTORY: ModuleHelper.containsDataDir(this.modulePath()),
     }
+  }
+
+  async getModuleSummary(): Promise<string> {
+    if (ModuleHelper.containsReadme(this.modulePath())) {
+      return this.getModuleSummaryFromReadme().then(
+        (line: any) => {
+          return line
+        }
+      )
+    }
+
+    return `Installs, and configures ${ModuleHelper.moduleBaseName(this.modulePath())}`
+  }
+
+  async getModuleSummaryFromReadme(): Promise<any> {
+    return nthline(2, ModuleHelper.readmeFilePath(this.modulePath()))
   }
 
   hasDependencies(): boolean {
@@ -190,18 +207,18 @@ class SfPuppetMetadata extends Command {
     })
   }
 
-  foldersInDir(modulePath: string): string[] {
+  private foldersInDir(modulePath: string): string[] {
     return fs.readdirSync(path.resolve(modulePath))
   }
 
-  modulesToSearch(): string[] {
+  private modulesToSearch(): string[] {
     return _.chain(this.puppetModuleDirs())
       .map((modulePath: string) => this.foldersInDir(modulePath))
       .flatten()
       .value()
   }
 
-  puppetModuleDirs(): string[] {
+  private puppetModuleDirs(): string[] {
     return this.flags.modulepath.split(':')
   }
 

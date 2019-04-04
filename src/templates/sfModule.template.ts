@@ -5,7 +5,7 @@ export let sfTemplate: any = `{
     "description": "sf-readyscale module",
     "version": "1.0.0",
     "author": "The Scale Factory Limited",
-    "summary": "Installs, and configures <%= MODULE_NAME; %>",
+    "summary": "<%= SUMMARY; %>",
     "license": "All rights reserved",
     "source": "https://github.com/scalefactory/readyscale",
     <% if (HAS_DATA_DIRECTORY) { %>
