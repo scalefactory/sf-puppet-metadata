@@ -8,9 +8,6 @@ export let sfTemplate: any = `{
     "summary": "<%= SUMMARY; %>",
     "license": "All rights reserved",
     "source": "https://github.com/scalefactory/readyscale",
-    <% if (HAS_DATA_DIRECTORY) { %>
-        "data_provider": "hiera",
-    <% } %>
     "dependencies": <%- JSON.stringify(DEPENDENCIES) %>,
     "operatingsystem_support": [
         {
