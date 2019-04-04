@@ -6,6 +6,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as _ from 'underscore'
 
+import {DependencyFormatter} from './helpers/dependency-formatter'
+import ModuleHelper = require('./helpers/module-helper')
+import {Dependency} from './interfaces/dependency'
 import {ModuleObject} from './interfaces/module-object'
 import {sfTemplate} from './templates/sfModule.template'
 
@@ -47,6 +50,15 @@ class SfPuppetMetadata extends Command {
 
   dependencies: Array<ModuleObject> | undefined
   writeLocation!: string
+  flags: any
+  args: any
+
+  async init() {
+    const {args, flags} = this.parse(SfPuppetMetadata)
+
+    this.args = args
+    this.flags = flags
+  }
 
   async run() {
     this.debug(`Loading Puppet modules from ${this.puppetModuleDirs()}`)
@@ -54,33 +66,24 @@ class SfPuppetMetadata extends Command {
 
     // Validate is a puppet module
     if (! this.isValidModule()) {
-      this.error(`${this.moduleBaseName()} is not a valid puppet module`)
+      this.error(`${ModuleHelper.moduleBaseName(this.modulePath())} is not a valid puppet module`)
     }
 
     // Warning if metadata already exists
-    if (this.containsMetaDataFile()) {
-      this.warn(`${this.moduleBaseName()} module already has metadata.json file`)
+    if (ModuleHelper.containsMetaDataFile(this.modulePath())) {
+      this.warn(`${ModuleHelper.moduleBaseName(this.modulePath())} module already has metadata.json file`)
     }
 
     this.dependencies = await this.findDependencies()
+    this.formatDependencies()
 
     // Output if flagged
-    if (this.shouldOutput()) {
-      this.printTemplate()
-    } else {
-      this.writeLocation = this.metaDataFileLocation()
-
-      if (this.shouldPromptToWrite()) {
-        this.writeLocation = await this.promptWriteLocation()
-      }
-
-      this.writeTemplate()
-    }
+    await this.output()
   }
 
-  async promptWriteLocation(): Promise<any> {
+  async promptWritePath(): Promise<any> {
     return cli.prompt('Where to write metadata.json?', {
-      default: this.metaDataFileLocation()
+      default: ModuleHelper.metaDataFilePath(this.modulePath())
     })
   }
 
@@ -92,9 +95,7 @@ class SfPuppetMetadata extends Command {
   }
 
   shouldPromptToWrite(): boolean {
-    const {flags} = this.parse(SfPuppetMetadata)
-
-    return flags.force === false
+    return this.flags.force === false
   }
 
   printTemplate(): void {
@@ -111,20 +112,18 @@ class SfPuppetMetadata extends Command {
   }
 
   formatDependencies(): object[] {
-    let formatted: object[] = []
+    let formatted: {name: string}[] = []
 
     if (this.dependencies !== undefined) {
       formatted = _.chain(this.dependencies)
         .map((moduleObject: ModuleObject) => {
-          moduleObject.matches = moduleObject.matches || []
-
-          return moduleObject.matches.reduce((dependencies: object[], match: string) => {
-            dependencies.push({name: match})
-
-            return dependencies
-          }, [])
+          const formatter = new DependencyFormatter(moduleObject)
+          return formatter.format()
         })
         .flatten()
+        .map((dependency: Dependency) => {
+          return {name: `${dependency.vendor}-${dependency.name}`}
+        })
         .value()
     }
 
@@ -133,9 +132,9 @@ class SfPuppetMetadata extends Command {
 
   generateData(): object {
     return {
-      MODULE_NAME: this.moduleBaseName(),
+      MODULE_NAME: ModuleHelper.moduleBaseName(this.modulePath()),
       DEPENDENCIES: this.hasDependencies() ? this.formatDependencies() : [],
-      HAS_DATA_DIRECTORY: this.containsDataDir()
+      HAS_DATA_DIRECTORY: ModuleHelper.containsDataDir(this.modulePath()),
     }
   }
 
@@ -148,43 +147,15 @@ class SfPuppetMetadata extends Command {
   }
 
   shouldOutput(): boolean {
-    const {flags} = this.parse(SfPuppetMetadata)
-
-    return flags.output === true
-  }
-
-  moduleBaseName(): string {
-    return path.basename(this.modulePath())
-  }
-
-  moduleManifestDir(): string {
-    return path.join(this.modulePath(), 'manifests')
+    return this.flags.output === true
   }
 
   modulePath(): string {
-    const {args} = this.parse(SfPuppetMetadata)
-
-    return path.resolve(args.modulepath)
+    return path.resolve(this.args.modulepath)
   }
 
   isValidModule(): boolean {
-    return this.containsManifestDir()
-  }
-
-  containsManifestDir(): boolean {
-    return fs.existsSync(path.join(this.modulePath(), 'manifests'))
-  }
-
-  containsDataDir(): boolean {
-    return fs.existsSync(path.join(this.modulePath(), 'data'))
-  }
-
-  containsMetaDataFile(): boolean {
-    return fs.existsSync(this.metaDataFileLocation())
-  }
-
-  metaDataFileLocation(): string {
-    return path.join(this.modulePath(), 'metadata.json')
+    return ModuleHelper.containsManifestDir(this.modulePath())
   }
 
   pluckFoundDependencies(matches: object): string[] {
@@ -200,7 +171,7 @@ class SfPuppetMetadata extends Command {
     const dependencies = this.moduleDirsToModuleListObject().map(async (moduleObject: ModuleObject): Promise<ModuleObject> => {
       moduleObject.matches = this.pluckFoundDependencies(await findSync(
         moduleObject.modules.join('|'),
-        this.moduleManifestDir(),
+        ModuleHelper.manifestDirFilePath(this.modulePath()),
         '.pp$'
       ))
 
@@ -214,26 +185,36 @@ class SfPuppetMetadata extends Command {
     return this.puppetModuleDirs().map((modulePath: string) => {
       return {
         path: modulePath,
-        modules: this.modulesInDir(modulePath),
+        modules: this.foldersInDir(modulePath),
       }
     })
   }
 
-  modulesInDir(modulePath: string): string[] {
+  foldersInDir(modulePath: string): string[] {
     return fs.readdirSync(path.resolve(modulePath))
   }
 
   modulesToSearch(): string[] {
     return _.chain(this.puppetModuleDirs())
-      .map((modulePath: string) => fs.readdirSync(path.resolve(modulePath)))
+      .map((modulePath: string) => this.foldersInDir(modulePath))
       .flatten()
       .value()
   }
 
   puppetModuleDirs(): string[] {
-    const {flags} = this.parse(SfPuppetMetadata)
+    return this.flags.modulepath.split(':')
+  }
 
-    return flags.modulepath.split(':')
+  private async output() {
+    if (this.shouldOutput()) {
+      this.printTemplate()
+    } else {
+      this.writeLocation = ModuleHelper.metaDataFilePath(this.modulePath())
+      if (this.shouldPromptToWrite()) {
+        this.writeLocation = await this.promptWritePath()
+      }
+      this.writeTemplate()
+    }
   }
 }
 
