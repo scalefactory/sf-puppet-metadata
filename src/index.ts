@@ -50,6 +50,7 @@ class SfPuppetMetadata extends Command {
 
   async run() {
     this.debug(`Loading Puppet modules from ${this.puppetModuleDirs()}`)
+    this.log(`Generating metadata.json for ${this.modulePath()}`)
 
     // Validate is a puppet module
     if (! this.isValidModule()) {
@@ -108,6 +109,7 @@ class SfPuppetMetadata extends Command {
 
     return JSON.stringify(JSON.parse(output), null, 4)
   }
+
   formatDependencies(): object[] {
     let formatted: object[] = []
 
