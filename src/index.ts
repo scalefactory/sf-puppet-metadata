@@ -66,12 +66,12 @@ class SfPuppetMetadata extends Command {
 
     // Validate is a puppet module
     if (! this.isValidModule()) {
-      this.error(`${ModuleHelper.moduleBaseName(this.modulePath())} is not a valid puppet module`)
+      this.error(`${this.moduleBaseName()} is not a valid puppet module`)
     }
 
     // Warning if metadata already exists
     if (ModuleHelper.containsMetaDataFile(this.modulePath())) {
-      this.warn(`${ModuleHelper.moduleBaseName(this.modulePath())} module already has metadata.json file`)
+      this.warn(`${this.moduleBaseName()} module already has metadata.json file`)
     }
 
     this.dependencies = await this.findDependencies()
@@ -133,7 +133,7 @@ class SfPuppetMetadata extends Command {
   async generateData(): Promise<object> {
     return {
       SUMMARY: await this.getModuleSummary(),
-      MODULE_NAME: ModuleHelper.moduleBaseName(this.modulePath()),
+      MODULE_NAME: this.moduleBaseName(),
       DEPENDENCIES: this.hasDependencies() ? this.formatDependencies() : [],
       HAS_DATA_DIRECTORY: ModuleHelper.containsDataDir(this.modulePath()),
     }
@@ -148,7 +148,7 @@ class SfPuppetMetadata extends Command {
       )
     }
 
-    return `Installs, and configures ${ModuleHelper.moduleBaseName(this.modulePath())}`
+    return `Installs, and configures ${this.moduleBaseName()}`
   }
 
   async getModuleSummaryFromReadme(): Promise<any> {
@@ -169,6 +169,10 @@ class SfPuppetMetadata extends Command {
 
   modulePath(): string {
     return path.resolve(this.args.modulepath)
+  }
+
+  moduleBaseName(): string {
+    return ModuleHelper.moduleBaseName(this.modulePath())
   }
 
   isValidModule(): boolean {
@@ -202,20 +206,13 @@ class SfPuppetMetadata extends Command {
     return this.puppetModuleDirs().map((modulePath: string) => {
       return {
         path: modulePath,
-        modules: this.foldersInDir(modulePath),
+        modules: _.without(this.foldersInDir(modulePath), this.moduleBaseName()),
       }
     })
   }
 
   private foldersInDir(modulePath: string): string[] {
     return fs.readdirSync(path.resolve(modulePath))
-  }
-
-  private modulesToSearch(): string[] {
-    return _.chain(this.puppetModuleDirs())
-      .map((modulePath: string) => this.foldersInDir(modulePath))
-      .flatten()
-      .value()
   }
 
   private puppetModuleDirs(): string[] {
