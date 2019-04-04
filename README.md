@@ -48,7 +48,7 @@ EXAMPLES
 
 Mount your puppetry to a folder called `/puppet` and use relative paths inside as parameters.
 ```sh-session
-$ docker-run -it -v /path/to/puppet/code:/puppet steveporter92/sf-puppet-metadata --moduledata /puppet/modules /puppet/modules/module
+$ docker run -it -v /path/to/puppet/code:/puppet steveporter92/sf-puppet-metadata --moduledata=/puppet/modules /puppet/modules/module
 ...
 ```
 <!-- usagestop -->
