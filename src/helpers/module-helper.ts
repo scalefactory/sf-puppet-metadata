@@ -7,19 +7,19 @@ namespace ModuleHelper {
   }
 
   export function containsManifestDir(modulePath: string): boolean {
-    return fs.existsSync(ModuleHelper.manifestDirFilePath(modulePath))
+    return fs.existsSync(manifestDirFilePath(modulePath))
   }
 
   export function containsDataDir(modulePath: string): boolean {
-    return fs.existsSync(ModuleHelper.dataDirFilePath(modulePath))
+    return fs.existsSync(dataDirFilePath(modulePath))
   }
 
   export function containsMetaDataFile(modulePath: string): boolean {
-    return fs.existsSync(ModuleHelper.metaDataFilePath(modulePath))
+    return fs.existsSync(metaDataFilePath(modulePath))
   }
 
   export function containsReadme(modulePath: string): boolean {
-    return fs.existsSync(ModuleHelper.readmeFilePath(modulePath))
+    return fs.existsSync(readmeFilePath(modulePath))
   }
 
   export function metaDataFilePath(modulePath: string): string {
@@ -40,7 +40,7 @@ namespace ModuleHelper {
 
   export function readMetaDataFile(modulePath: string): {name: string} {
     return JSON.parse(
-      fs.readFileSync(ModuleHelper.metaDataFilePath(modulePath)).toString()
+      fs.readFileSync(metaDataFilePath(modulePath)).toString()
     )
   }
 }

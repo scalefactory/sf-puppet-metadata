@@ -221,7 +221,7 @@ class SfPuppetMetadata extends Command {
 
   private async output() {
     if (this.shouldOutput()) {
-      this.printTemplate()
+      await this.printTemplate()
     } else {
       this.writeLocation = ModuleHelper.metaDataFilePath(this.modulePath())
       if (this.shouldPromptToWrite()) {
