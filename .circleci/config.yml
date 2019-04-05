@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_NAME: steveporter92/sf-puppet-metadata
+      IMAGE_NAME: scalefactory  /sf-puppet-metadata
     docker:
       - image: circleci/buildpack-deps:xenial
 jobs:

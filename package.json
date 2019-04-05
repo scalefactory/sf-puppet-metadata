@@ -6,7 +6,7 @@
   "bin": {
     "sf-puppet-metadata": "./bin/run"
   },
-  "bugs": "https://github.com/StevePorter92/sf-puppet-metadata/issues",
+  "bugs": "https://github.com/ScaleFactory/sf-puppet-metadata/issues",
   "dependencies": {
     "@oclif/command": "^1.5.12",
     "@oclif/config": "^1.12.12",
@@ -36,7 +36,7 @@
     "/bin",
     "/lib"
   ],
-  "homepage": "https://github.com/StevePorter92/sf-puppet-metadata",
+  "homepage": "https://github.com/ScaleFactory/sf-puppet-metadata",
   "keywords": [
     "oclif"
   ],
@@ -48,7 +48,7 @@
       "@oclif/plugin-update"
     ]
   },
-  "repository": "StevePorter92/sf-puppet-metadata",
+  "repository": "ScaleFactory/sf-puppet-metadata",
   "scripts": {
     "posttest": "tslint -p . -t stylish",
     "prepack": "rm -rf lib && tsc -b",
