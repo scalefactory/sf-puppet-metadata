@@ -9,6 +9,7 @@ Generates metadata.json for a puppet module
 [![CircleCI](https://circleci.com/gh/ScaleFactory/sf-puppet-metadata.svg?style=svg&circle-token=dcef9f0fac2d02df3c7a9900750b2b7d89f4064a)](https://circleci.com/gh/ScaleFactory/sf-puppet-metadata)
 <!-- [![Downloads/week](https://img.shields.io/npm/dw/sf-puppet-metadata.svg)](https://npmjs.org/package/sf-puppet-metadata)
 [![License](https://img.shields.io/npm/l/sf-puppet-metadata.svg)](https://github.com/ScaleFactory/sf-puppet-metadata/blob/master/package.json) -->
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- toc -->
 * [Usage](#usage)
