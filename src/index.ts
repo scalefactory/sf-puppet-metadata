@@ -1,17 +1,11 @@
 import {Command, flags} from '@oclif/command'
 import cli from 'cli-ux'
-import * as ejs from 'ejs'
-import {findSync} from 'find-in-files'
 import * as fs from 'fs'
-import * as nthline from 'nthline'
 import * as path from 'path'
-import * as _ from 'underscore'
 
-import {DependencyFormatter} from './helpers/dependency-formatter'
+import {MetaDataGenerator} from './helpers/meta-data-generator'
 import ModuleHelper = require('./helpers/module-helper')
-import {Dependency} from './interfaces/dependency'
 import {ModuleObject} from './interfaces/module-object'
-import {sfTemplate} from './templates/sfModule.template'
 
 class SfPuppetMetadata extends Command {
   static description = 'Generates metadata.json for a given Puppet module'
@@ -19,7 +13,8 @@ class SfPuppetMetadata extends Command {
   static usage = 'sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module'
 
   static examples = [
-    '$ sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module -o',
+    '$ sf-puppet-metadata --moduledata /path/to/puppet/modules_dir /path/to/puppet/module',
+    '$ sf-puppet-metadata --dir --moduledata /path/to/puppet/modules_dir /path/to/puppet_modules',
     '$ sf-puppet-metadata --help',
   ]
 
@@ -44,6 +39,11 @@ class SfPuppetMetadata extends Command {
       description: 'Force writing without prompt',
       default: false
     }),
+
+    dir: flags.boolean({
+      description: 'The given path is a directory of modules',
+      default: false
+    }),
   }
 
   static args = [{name: 'modulepath', required: true}]
@@ -62,153 +62,27 @@ class SfPuppetMetadata extends Command {
 
   async run() {
     this.debug(`Loading Puppet modules from ${this.puppetModuleDirs()}`)
-    this.log(`Generating metadata.json for ${this.modulePath()}`)
 
-    // Validate is a puppet module
-    if (! this.isValidModule()) {
-      this.error(`${this.moduleBaseName()} is not a valid puppet module`)
-    }
+    if (this.flags.dir) {
+      this.log(`Generating metadata.json for all modules in ${this.modulePath()}`)
 
-    // Warning if metadata already exists
-    if (ModuleHelper.containsMetaDataFile(this.modulePath())) {
-      this.warn(`${this.moduleBaseName()} module already has metadata.json file`)
-    }
-
-    this.dependencies = await this.findDependencies()
-    this.formatDependencies()
-
-    // Output if flagged
-    await this.output()
-  }
-
-  async promptWritePath(): Promise<any> {
-    return cli.prompt('Where to write metadata.json?', {
-      default: ModuleHelper.metaDataFilePath(this.modulePath())
-    })
-  }
-
-  writeTemplate(): void {
-    fs.writeFile(this.writeLocation, this.generateOutput(), (err: any) => {
-      if (err) this.error(err)
-      this.log(`Successfully Written to ${this.writeLocation}.`)
-    })
-  }
-
-  shouldPromptToWrite(): boolean {
-    return this.flags.force === false
-  }
-
-  async printTemplate(): Promise<void> {
-    this.log(await this.generateOutput())
-  }
-
-  async generateOutput(): Promise<string> {
-    const output = ejs.render(
-      this.loadTemplate(),
-      await this.generateData()
-    )
-
-    return JSON.stringify(JSON.parse(output), null, 4)
-  }
-
-  formatDependencies(): object[] {
-    let formatted: {name: string}[] = []
-
-    if (this.dependencies !== undefined) {
-      formatted = _.chain(this.dependencies)
-        .map((moduleObject: ModuleObject) => {
-          const formatter = new DependencyFormatter(moduleObject)
-          return formatter.format()
-        })
-        .flatten()
-        .map((dependency: Dependency) => {
-          return {name: `${dependency.vendor}-${dependency.name}`}
-        })
-        .value()
-    }
-
-    return formatted
-  }
-
-  async generateData(): Promise<object> {
-    return {
-      SUMMARY: await this.getModuleSummary(),
-      MODULE_NAME: this.moduleBaseName(),
-      DEPENDENCIES: this.hasDependencies() ? this.formatDependencies() : [],
-      HAS_DATA_DIRECTORY: ModuleHelper.containsDataDir(this.modulePath()),
-    }
-  }
-
-  async getModuleSummary(): Promise<string> {
-    if (ModuleHelper.containsReadme(this.modulePath())) {
-      return this.getModuleSummaryFromReadme().then(
-        (line: any) => {
-          return line
-        }
-      )
-    }
-
-    return `Installs, and configures ${this.moduleBaseName()}`
-  }
-
-  async getModuleSummaryFromReadme(): Promise<any> {
-    return nthline(2, ModuleHelper.readmeFilePath(this.modulePath()))
-  }
-
-  hasDependencies(): boolean {
-    return this.dependencies !== undefined && this.dependencies.length > 0
-  }
-
-  loadTemplate() {
-    return sfTemplate
-  }
-
-  shouldOutput(): boolean {
-    return this.flags.output === true
-  }
-
-  modulePath(): string {
-    return path.resolve(this.args.modulepath)
-  }
-
-  moduleBaseName(): string {
-    return ModuleHelper.moduleBaseName(this.modulePath())
-  }
-
-  isValidModule(): boolean {
-    return ModuleHelper.containsManifestDir(this.modulePath())
-  }
-
-  pluckFoundDependencies(matches: object): string[] {
-    return _.chain(matches)
-      .values()
-      .pluck('matches')
-      .flatten()
-      .unique()
-      .value()
-  }
-
-  async findDependencies(): Promise<ModuleObject[]> {
-    const dependencies = this.moduleDirsToModuleListObject().map(async (moduleObject: ModuleObject): Promise<ModuleObject> => {
-      moduleObject.matches = this.pluckFoundDependencies(await findSync(
-        moduleObject.modules.join('|'),
-        ModuleHelper.manifestDirFilePath(this.modulePath()),
-        '.pp$'
-      ))
-
-      return moduleObject
-    })
-
-    return Promise.all(dependencies)
-  }
-
-  moduleDirsToModuleListObject(): ModuleObject[] {
-    return this.puppetModuleDirs().map((modulePath: string) => {
-      return {
-        path: modulePath,
-        modules: _.without(this.foldersInDir(modulePath), this.moduleBaseName()),
+      if (this.shouldOutput() === false) {
+        await cli.confirm('This will overwrite any existing metadatafiles. continue?')
       }
-    })
+
+      const allModules = this.foldersInDir(this.modulePath())
+
+      allModules.forEach(async (moduleName: string) => {
+        const modulePath = path.join(this.modulePath(), moduleName)
+        this.generateMetaData(modulePath)
+      })
+    } else {
+      this.log(`Generating metadata.json for ${this.modulePath()}`)
+
+      this.generateMetaData(this.modulePath())
+    }
+
+    this.log('Successfully generated manifests')
   }
 
   private foldersInDir(modulePath: string): string[] {
@@ -219,16 +93,51 @@ class SfPuppetMetadata extends Command {
     return this.flags.modulepath.split(':')
   }
 
-  private async output() {
-    if (this.shouldOutput()) {
-      await this.printTemplate()
-    } else {
-      this.writeLocation = ModuleHelper.metaDataFilePath(this.modulePath())
-      if (this.shouldPromptToWrite()) {
-        this.writeLocation = await this.promptWritePath()
-      }
-      this.writeTemplate()
+  private async generateMetaData(modulePath: string): Promise<void> {
+    const generator = new MetaDataGenerator()
+    generator.setPuppetModulePaths(this.puppetModuleDirs())
+    generator.setModulePath(modulePath)
+
+    // Validate is a puppet module
+    if (generator.isInvalidModule()) {
+      this.warn(`Skipping ${path.basename(modulePath)}, it is not a valid puppet module`)
+      return
     }
+
+    // Warning if metadata already exists
+    if (this.flags.dir === false && generator.containsMetaDataFile()) {
+      this.warn(`${path.basename(modulePath)} module already has metadata.json file`)
+    }
+
+    if (this.shouldOutput()) {
+      this.log(await generator.generateMetaData())
+    } else {
+      generator.resetWritePath()
+
+      if (this.shouldPromptToWrite()) {
+        generator.setWritePath(await this.promptWritePath())
+      }
+
+      generator.writeTemplate()
+    }
+  }
+
+  private async promptWritePath(): Promise<any> {
+    return cli.prompt('Where to write metadata.json?', {
+      default: ModuleHelper.metaDataFilePath(this.modulePath())
+    })
+  }
+
+  private shouldPromptToWrite(): boolean {
+    return this.flags.dir === false && this.flags.force === false
+  }
+
+  private shouldOutput(): boolean {
+    return this.flags.output === true
+  }
+
+  private modulePath(): string {
+    return path.resolve(this.args.modulepath)
   }
 }
 
